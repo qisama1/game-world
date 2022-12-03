@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="game-auth" />
+        <module name="game-server" />
+        <module name="game-bot" />
+        <module name="game-user" />
+        <module name="game-registry" />
+        <module name="game-gateway" />
+        <module name="game-match" />
+        <module name="game-oss" />
+        <module name="game-common" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

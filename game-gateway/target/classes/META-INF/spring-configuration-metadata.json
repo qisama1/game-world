@@ -1,0 +1,17 @@
+{
+  "groups": [
+    {
+      "name": "secure.ignore",
+      "type": "com.chin.gamegateway.config.IgnoreUrlsConfig",
+      "sourceType": "com.chin.gamegateway.config.IgnoreUrlsConfig"
+    }
+  ],
+  "properties": [
+    {
+      "name": "secure.ignore.urls",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "com.chin.gamegateway.config.IgnoreUrlsConfig"
+    }
+  ],
+  "hints": []
+}
