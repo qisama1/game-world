@@ -65,11 +65,20 @@ public class UserService implements IUserService {
 
     @Override
     public Map<String, String> insertUser(String username, String password, String photo, Integer rating) {
+        Map<String, String> resultMap = new HashMap<>();
+        if (null == username || "".equals(username)) {
+            resultMap.put("error_message", "用户名不能为空");
+            return resultMap;
+        }
+        if (null == password || "".equals(password)) {
+            resultMap.put("error_message", "密码不能为空");
+            return resultMap;
+        }
         userRepository.insertUser(username,
                 password,
                 photo,
                 rating);
-        Map<String, String> resultMap = new HashMap<>();
+
         resultMap.put("error_message", "success");
         return resultMap;
     }

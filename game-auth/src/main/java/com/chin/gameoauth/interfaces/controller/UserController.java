@@ -38,4 +38,12 @@ public class UserController {
         return userService.userInfo();
     }
 
+    @PostMapping("/user/account/register/")
+    public Map<String, String> register(@RequestParam Map<String, String> map){
+        String username = map.get("username");
+        String password = map.get("password");
+        String confirmed = map.get("confirmedPassword");
+        String photo = "https://www.chincode.cn/assets/img/logo.png";
+        return userService.insertUser(username, password, photo, 1500);
+    }
 }
