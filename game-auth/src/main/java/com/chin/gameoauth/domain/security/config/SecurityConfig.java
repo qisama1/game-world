@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 // 下面的链接是公开的
-                .antMatchers("/user/account/token/", "/user/account/register/", "/websocket/**", "/test").permitAll()
+                .antMatchers("/user/account/token", "/user/account/register", "/websocket/**", "/test").permitAll()
                 .antMatchers("/pk/start/game/").hasIpAddress("127.0.0.1")
                 .antMatchers("/pk/receive/bot/move/").hasIpAddress("127.0.0.1")
                 .antMatchers(HttpMethod.OPTIONS).permitAll()

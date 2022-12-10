@@ -27,18 +27,18 @@ public class UserController {
         return "test";
     }
 
-    @PostMapping("/user/account/token/")
+    @PostMapping("/user/account/token")
     public Map<String, String> getToken(@RequestParam Map<String, String> map) {
         logger.info("username: {}", map.get("username"));
         return userService.token(map.get("username"), map.get("password"));
     }
 
-    @GetMapping("/user/account/info/")
+    @GetMapping("/user/account/info")
     public Map<String, String> getInfo() {
         return userService.userInfo();
     }
 
-    @PostMapping("/user/account/register/")
+    @PostMapping("/user/account/register")
     public Map<String, String> register(@RequestParam Map<String, String> map){
         String username = map.get("username");
         String password = map.get("password");

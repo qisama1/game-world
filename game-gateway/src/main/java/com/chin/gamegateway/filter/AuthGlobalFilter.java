@@ -9,8 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.client.RestTemplate;
@@ -57,27 +56,17 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         }
         // 2. 获取query里面的access_token
         String accessToken = exchange.getRequest().getHeaders().getFirst("Authorization");
-        if (StringUtils.isBlank(accessToken) || !accessToken.startsWith("Bearer ")) {
-            // no Authorization continue
-            return handler.writeError(exchange, "access_token is empty");
-        }
-
-        accessToken = accessToken.substring(7);
-        String uId = exchange.getRequest().getHeaders().getFirst("uId");
-        if (StringUtils.isBlank(uId)) {
-            return handler.writeError(exchange, "access_token is empty");
-        }
         // 3. 去auth-service中检查token是否正确
-        String checkTokenUrl = "http://game-auth/auth/check_token";
+        String checkTokenUrl = "http://game-auth/user/account/info";
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("uID", uId);
-        paramMap.put("token", accessToken);
         try {
-            String resultStr = HttpUtil.post(checkTokenUrl, paramMap, 350);
-            HashMap<String, String> resultMap = JSON.parseObject(resultStr, HashMap.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            HashMap<String, String> resultMap = restTemplate.exchange(checkTokenUrl, HttpMethod.GET, entity, HashMap.class).getBody();
             // token no use
-            if (resultMap.get("code") == "-1") {
-                return handler.writeError(exchange, resultMap.get("message"));
+            if (!resultMap.get("error_message").equals("success")) {
+                return handler.writeError(exchange, resultMap.get("error_message"));
             }
         } catch (Exception e) {
             return handler.writeError(exchange,

@@ -11,6 +11,21 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        - id: game-auth
+          uri: lb://game-auth
+          predicates:
+            - Path=/game-auth/**
+          filters:
+            - StripPrefix=1
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+
+secure:
+  ignore:
+    urls: # 配置白名单路径
+      - /game-auth/user/account/token
+      - /game-auth/test
 
 logging:
   pattern:

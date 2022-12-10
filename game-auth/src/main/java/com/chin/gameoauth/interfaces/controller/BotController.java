@@ -29,13 +29,13 @@ public class BotController {
         return botService.queryBotList();
     }
 
-    @PostMapping("/user/bot/remove/")
+    @PostMapping("/user/bot/remove")
     public Map<String, String> deleteBot(@RequestParam Map<String, String> map) {
         String id = map.get("bot_id");
         return botService.deleteBot(Integer.valueOf(id));
     }
 
-    @PostMapping("/user/bot/add/")
+    @PostMapping("/user/bot/add")
     public Map<String, String> insertBot(@RequestParam Map<String, String> map) {
         String title = map.get("title");
         String description = map.get("description");
