@@ -58,7 +58,6 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         String accessToken = exchange.getRequest().getHeaders().getFirst("Authorization");
         // 3. 去auth-service中检查token是否正确
         String checkTokenUrl = "http://game-auth/user/account/info";
-        Map<String, Object> paramMap = new HashMap<>();
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", accessToken);

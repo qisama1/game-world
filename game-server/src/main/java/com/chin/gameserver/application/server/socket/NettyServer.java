@@ -1,6 +1,6 @@
-package com.chin.gameserver.socket;
+package com.chin.gameserver.application.server.socket;
 
-import com.chin.gameserver.handlers.GameServerInitializer;
+import com.chin.gameserver.application.server.handlers.GameServerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -60,6 +60,7 @@ public class NettyServer implements Callable<Channel> {
 
     @Override
     public Channel call() throws Exception {
+        // 监听7000端口的ws请求，在handler里面要特判
         InetSocketAddress inetSocketAddress = new InetSocketAddress("127.0.0.1", 7000);
         ChannelFuture channelFuture = bing(inetSocketAddress);
         channel = channelFuture.channel();

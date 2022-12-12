@@ -1,6 +1,5 @@
-package com.chin.gameserver.handlers;
+package com.chin.gameserver.application.server.handlers;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
