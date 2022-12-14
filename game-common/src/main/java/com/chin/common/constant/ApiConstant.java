@@ -2,6 +2,7 @@ package com.chin.common.constant;
 
 /**
  * 全局常量类
+ * @author qi
  */
 public class ApiConstant {
     // 成功

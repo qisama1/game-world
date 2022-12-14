@@ -1,0 +1,36 @@
+server:
+  port: 8001
+
+spring:
+  application:
+    name: game-oss
+  aop:
+    proxy-target-class: true
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      file-size-threshold: 500MB
+      maxRequestSize: 500MB
+      maxFileSize: 500MB
+# minio
+
+file:
+  store:
+    minio:
+      endpoint: http://127.0.0.1:9000
+      bucket: oss-server
+      access-key: minioadmin
+      secret-key: minioadmin123?
+      tmp-dir: ./tmp/
+      tmp-clean: true
+      tmp-first-clean-time: 2022-12-14 11:45:00
+      tmp-clean-period: 12960000
+      tmp-alive-duration: 12960000
+
+redisson:
+  singleServerConfig:
+    address: 127.0.0.1:6379
+
+eventBus:
+  model: disruptor

@@ -35,6 +35,17 @@ public class ResultInfoUtil {
     }
 
     /**
+     * build error
+     * @param <T>
+     * @return
+     */
+    public static <T> ResultInfo<T> buildError() {
+        ResultInfo<T> resultInfo = build(ApiConstant.ERROR_CODE,
+                ApiConstant.ERROR_MESSAGE, "", null);
+        return resultInfo;
+    }
+
+    /**
      * 请求成功返回
      *
      * @param path 请求路径
@@ -44,6 +55,17 @@ public class ResultInfoUtil {
     public static <T> ResultInfo<T> buildSuccess(String path) {
         ResultInfo<T> resultInfo = build(ApiConstant.SUCCESS_CODE,
                 ApiConstant.SUCCESS_MESSAGE, path, null);
+        return resultInfo;
+    }
+
+    /**
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> ResultInfo<T> buildSuccess() {
+        ResultInfo<T> resultInfo = build(ApiConstant.SUCCESS_CODE,
+                ApiConstant.SUCCESS_MESSAGE, "", null);
         return resultInfo;
     }
 

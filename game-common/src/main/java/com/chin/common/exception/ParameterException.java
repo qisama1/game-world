@@ -6,6 +6,7 @@ import lombok.Setter;
 
 /**
  * 全局异常类
+ * @author qi
  */
 @Getter
 @Setter

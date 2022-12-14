@@ -130,15 +130,13 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
                 logger.info("服务器收到来自 {} 的 user: 的{}", ctx.channel().remoteAddress(), user.getUsername(),request);
             }
             if (event != null) {
-                switch (event) {
-                    case "start-matching":
-                        logger.info("user:{} 开始匹配", user.getUsername());
-                        startMatch();
-                    case "stop-matching":
-                        logger.info("user:{} 停止匹配", user.getUsername());
-                    case "move":
-                        logger.info("user:{}, move!", user.getUsername());
-                        move();
+                if ("start-matching".equals(event)) {
+                    logger.info("user:{} 开始匹配 使用bot为{}", user.getUsername(), data.getInteger("bot_id"));
+                    startMatch();
+                } else if ("stop-matching".equals(event)){
+                    logger.info("user:{} 结束匹配", user.getUsername());
+                } else if ("move".equals(event)) {
+                    logger.info("move {}", data.getInteger("direction"));
                 }
             }
         }
