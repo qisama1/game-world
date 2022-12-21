@@ -45,6 +45,9 @@ public class BotRepository implements IBotRepository {
     @Override
     public BotVO queryBotById(Integer id) {
         Bot bot = botDao.queryBotById(id);
+        if (bot == null) {
+            return null;
+        }
         BotVO botVo = new BotVO();
         botVo.setUserId(bot.getUserId());
         botVo.setDescription(bot.getDescription());

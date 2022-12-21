@@ -9,8 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 
 @SpringBootTest
@@ -39,5 +42,9 @@ public class ApiTest {
     public void testBot() {
         List<Bot> bots = botDao.queryBotByUserId(3);
         logger.info("{}", bots);
+    }
+
+    @Test
+    public void testBotId(){
     }
 }

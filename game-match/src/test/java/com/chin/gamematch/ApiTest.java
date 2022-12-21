@@ -8,6 +8,18 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+
 
 /**
  * @PROJECT_NAME: game-world
@@ -17,6 +29,9 @@ import org.junit.jupiter.api.Test;
  */
 public class ApiTest {
 
+    private RestTemplate restTemplate = new RestTemplate();
+
+    private final Logger logger = LoggerFactory.getLogger(ApiTest.class);
     @Test
     public void test_rpc() {
 
@@ -47,4 +62,12 @@ public class ApiTest {
         System.out.println(result);
     }
 
+    @Test
+    public void testBotId() {
+        String checkTokenUrl = "http://game-auth/user/bot/queryBot";
+        MultiValueMap<String, Integer> data = new LinkedMultiValueMap<>();
+        data.add("botId", 3);
+        HashMap<String, String> resultMap = restTemplate.postForObject(checkTokenUrl, data, HashMap.class);
+        logger.info("{}", resultMap);
+    }
 }

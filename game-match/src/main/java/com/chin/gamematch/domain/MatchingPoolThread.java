@@ -6,10 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -21,10 +23,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author: qi
  * @DATE: 2022/12/15 18:28
  */
+@Component
 public class MatchingPoolThread extends Thread implements IMatchingPool{
 
     Logger logger = LoggerFactory.getLogger(MatchingPoolThread.class);
-    private static final String START_GAME_URL = "http://127.0.0.1:3000/pk/start/game/";
+    private static final String START_GAME_URL = "http://127.0.0.1/game-server/pk/start/game";
 
 
     List<Player> players;
@@ -47,7 +50,6 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
         } finally {
             writeLock.unlock();
         }
-
     }
 
     public MatchingPoolThread() {
@@ -56,31 +58,53 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
 
     @Override
     public void run() {
+        // 1. 给玩家新增一个退出属性，但是当时不立刻从列表中删除。
+        // 2. 开启一个定时线程，专门从列表中把退出掉的线程给删除掉，这样就可以将用户取消匹配的复杂度降低。
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("demo-pool-%d").build();
-        ExecutorService singleThreadPool = new ThreadPoolExecutor(1, 1,
+        ExecutorService singleThreadPool = new ThreadPoolExecutor(3, 3,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
         singleThreadPool.execute(() -> {
             try {
-                sleep(10000);
-                logger.info("删除掉被排除的玩家");
-                List<Player> newPlayer = new ArrayList<>();
-                readLock.lock();
-                try {
-                    for (Player player : players) {
-                        if (!player.isQuited()) {
-                            newPlayer.add(player);
+                for (;;) {
+                    sleep(10000);
+                    logger.info("删除掉被排除的玩家");
+                    List<Player> newPlayer = new ArrayList<>();
+                    readLock.lock();
+                    try {
+                        for (Player player : players) {
+                            if (!player.isQuited()) {
+                                newPlayer.add(player);
+                            }
                         }
+                    } finally {
+                        readLock.unlock();
                     }
-                } finally {
-                    readLock.unlock();
+                    writeLock.lock();
+                    try {
+                        setPlayers(newPlayer);
+                    } finally {
+                        writeLock.unlock();
+                    }
                 }
-                writeLock.lock();
-                try {
-                    setPlayers(newPlayer);
-                } finally {
-                    writeLock.unlock();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        singleThreadPool.execute(() -> {
+            try {
+                for (;;) {
+                    logger.info("增加waiting time");
+                    Thread.sleep(2000);
+                    writeLock.lock();
+                    try {
+                        for (Player player : players) {
+                            player.setWaitingTime(player.getWaitingTime() + 1);
+                        }
+                    } finally {
+                        writeLock.unlock();
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -88,10 +112,10 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
         });
         while (true) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 matchPlayers();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                continue;
             }
         }
     }
@@ -118,7 +142,6 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
         } finally {
             writeLock.unlock();
         }
-
     }
 
     public void matchPlayers() {
@@ -127,7 +150,6 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
         Player playerB = null;
         try {
             for (int i = 0; i < players.size(); i ++) {
-                logger.info("开始匹配");
                 if (players.get(i).isQuited()) {
                     continue;
                 }
@@ -137,11 +159,12 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
                     }
                     Player a = players.get(i);
                     Player b = players.get(j);
+                    logger.info("a {}, b {}", a, b);
                     if (checkMatch(a, b)) {
                         logger.info("玩家A：{}， 玩家B：{} 匹配成功", a.getUserId(), b.getUserId());
                         playerA = a;
                         playerB = b;
-                        //sendResult(a, b);
+                        sendResult(a, b);
                         break;
                     }
                 }
@@ -171,10 +194,17 @@ public class MatchingPoolThread extends Thread implements IMatchingPool{
         restTemplate.postForObject(START_GAME_URL, data, String.class);
     }
 
+    /**
+     * 判断是否匹配
+     * @param a
+     * @param b
+     * @return
+     */
     private boolean checkMatch(Player a, Player b) {
-        return true;
+        int ratingDelta = Math.abs(a.getRating() - b.getRating());
+        int waitingTime = Math.min(a.getWaitingTime(), b.getWaitingTime());
+        return ratingDelta <= waitingTime * 10;
     }
 
-    // 1. 给玩家新增一个退出属性，但是当时不立刻从列表中删除。
-    // 2. 开启一个定时线程，专门从列表中把退出掉的线程给删除掉，这样就可以将用户取消匹配的复杂度降低。
+
 }

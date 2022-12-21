@@ -2,6 +2,9 @@ package com.chin.gameserver.application.server.handlers;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.chin.gameserver.application.match.IMatchService;
+import com.chin.gameserver.application.server.model.Bot;
+import com.chin.gameserver.application.server.model.Game;
 import com.chin.gameserver.application.server.model.User;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -22,9 +25,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author qi
@@ -36,18 +42,40 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
     //2. 这个SocketHandler是每个连接私有的，所以我们把它和连接一一对应进行管理
     //3. 需要restTemplate去从auth那边获取信息和记录信息
 
-    private Logger logger = LoggerFactory.getLogger(SocketHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(SocketHandler.class);
 
-    private ChannelHandlerContext ctx = null;
+    public ChannelHandlerContext ctx = null;
 
+    /**
+     * 存放当前channel对应的用户
+     */
     private User user = null;
 
+    /**
+     * 存放当前channel对应的game
+     */
+    private Game game = null;
+
+    /**
+     * 存放当前channel的jwtToken
+     */
+    private String jwtToken = null;
+
+    /**
+     * 当前channel的websocket握手
+     */
     private WebSocketServerHandshaker handshaker;
 
-    private static RestTemplate restTemplate;
+    public static RestTemplate restTemplate;
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         SocketHandler.restTemplate = restTemplate;
+    }
+
+    private static IMatchService matchService;
+    @Autowired
+    public void setMatchService(IMatchService matchService) {
+        SocketHandler.matchService = matchService;
     }
 
     @Override
@@ -125,16 +153,20 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
             String token = data.getString("token");
             String event = data.getString("event");
             if (token != null) {
+                jwtToken = token;
                 token = "Bearer ".concat(token);
                 user = getUserInfo(token);
+                ChannelHandler.userSockets.put(user.getId(), this);
+                ChannelHandler.userMap.put(user.getId(), user);
                 logger.info("服务器收到来自 {} 的 user: 的{}", ctx.channel().remoteAddress(), user.getUsername(),request);
             }
             if (event != null) {
                 if ("start-matching".equals(event)) {
                     logger.info("user:{} 开始匹配 使用bot为{}", user.getUsername(), data.getInteger("bot_id"));
-                    startMatch();
+                    startMatch(data.getInteger("bot_id"));
                 } else if ("stop-matching".equals(event)){
                     logger.info("user:{} 结束匹配", user.getUsername());
+                    stopMatch();
                 } else if ("move".equals(event)) {
                     logger.info("move {}", data.getInteger("direction"));
                 }
@@ -161,15 +193,96 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
         return new User(Integer.parseInt(resultMap.get("id")), resultMap.get("username"), resultMap.get("photo"), Integer.valueOf(resultMap.get("rating")));
     }
 
-    private void startMatch() {
+    private void startMatch(Integer botId) {
         // 这里交由game-match负责，然后它会匹配好了对局以后交由server进行对局执行
+        matchService.addPlayer(user.getId(), user.getRating(), botId);
+    }
+
+    private void stopMatch() {
+        matchService.removePlayer(user.getId());
     }
 
     private void move() {
         // 记录下用户的移动
     }
 
+    public ChannelHandlerContext getChannelHandlerContext() {
+        return this.ctx;
+    }
 
+    /**
+     * 接受到匹配服务器的信息后，再此开始对局
+     * @param aId
+     * @param aBotId
+     * @param bId
+     * @param bBotId
+     */
+    public static void startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId) {
+        // 开启对局
+        logger.info("start!, {}, {}", aId, bId);
+        User a = ChannelHandler.userSockets.get(aId).user;
+        User b = ChannelHandler.userSockets.get(bId).user;
+        Bot botA = null;
+        if (aBotId.equals(-1)) {
+            botA = new Bot();
+            botA.setId(-1);
+        } else {
+            botA = postIdForBot(aBotId);
+        }
+        Bot botB = null;
+        if (bBotId.equals(-1)) {
+            botB = new Bot();
+            botB.setId(-1);
+        } else {
+            botB = postIdForBot(bBotId);
+        }
+        Map<Integer, SocketHandler> users = ChannelHandler.userSockets;
+        Game game = new Game(13, 14, 20, a.getId(), b.getId(), botA, botB);
+        users.get(a.getId()).game = game;
+        users.get(b.getId()).game = game;
+        game.start();
+
+        JSONObject respGame = buildGameResponse(game);
+        JSONObject respA = buildGameResponseDetail(respGame, b);
+
+        if (users.get(a.getId()) != null) {
+            users.get(a.getId()).ctx.channel().writeAndFlush(new TextWebSocketFrame(respA.toJSONString()));
+        }
+
+        JSONObject respB = buildGameResponseDetail(respGame, a);
+        if (users.get(b.getId()) != null) {
+            users.get(b.getId()).ctx.channel().writeAndFlush(new TextWebSocketFrame(respB.toJSONString()));
+        }
+    }
+
+    private static JSONObject buildGameResponse(Game game) {
+        JSONObject respGame = new JSONObject();
+        respGame.put("a_id", game.getPlayerA().getId());
+        respGame.put("b_id", game.getPlayerB().getId());
+        respGame.put("a_sx", game.getPlayerA().getSx());
+        respGame.put("a_sy", game.getPlayerA().getSy());
+        respGame.put("b_sx", game.getPlayerB().getSx());
+        respGame.put("b_sy", game.getPlayerB().getSy());
+        respGame.put("map", game.getG());
+        return respGame;
+    }
+
+    private static JSONObject buildGameResponseDetail(JSONObject respGame, User another) {
+        JSONObject respA = new JSONObject();
+        respA.put("event", "start-matching");
+        respA.put("opponent_username", another.getUsername());
+        respA.put("opponent_photo", another.getPhoto());
+        respA.put("game", respGame);
+        return respA;
+    }
+
+    private static Bot postIdForBot(Integer botId) {
+        String checkTokenUrl = "http://game-auth/user/bot/queryBot";
+        MultiValueMap<String, Integer> data = new LinkedMultiValueMap<>();
+        data.add("botId", botId);
+        HashMap<String, String> resultMap = restTemplate.postForObject(checkTokenUrl, data, HashMap.class);
+        return new Bot(Integer.valueOf(resultMap.get("botId")), Integer.valueOf(resultMap.get("userId")), resultMap.get("content"), resultMap.get("description"), resultMap.get("title"));
+    }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);

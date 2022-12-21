@@ -29,6 +29,12 @@ public class BotController {
         return botService.queryBotList();
     }
 
+    @PostMapping("/user/bot/queryBot")
+    public Map<String, String> queryBotById(@RequestParam Integer botId) {
+        System.out.println("get");
+        return botService.queryBotById(botId);
+    }
+
     @PostMapping("/user/bot/remove")
     public Map<String, String> deleteBot(@RequestParam Map<String, String> map) {
         String id = map.get("bot_id");

@@ -49,7 +49,14 @@ public class BotService implements IBotService {
     @Override
     public Map<String, String> queryBotById(Integer id) {
         BotVO botVO = botRepository.queryBotById(id);
-        return null;
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put("error_message", "success");
+        resultMap.put("botId", botVO.getId().toString());
+        resultMap.put("userId", botVO.getUserId().toString());
+        resultMap.put("content", botVO.getContent());
+        resultMap.put("title", botVO.getTitle());
+        resultMap.put("description", botVO.getDescription());
+        return resultMap;
     }
 
     @Override
