@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @DATE: 2022/12/19 19:57
  */
 public class Game extends Thread{
+
     private final Integer rows;
     private final Integer cols;
     private final Integer inner_walls_count;

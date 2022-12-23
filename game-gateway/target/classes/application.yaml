@@ -17,6 +17,12 @@ spring:
             - Path=/game-auth/**
           filters:
             - StripPrefix=1
+        - id: game-server
+          uri: lb://game-server
+          predicates:
+            - Path=/game-server/**
+          filters:
+            - StripPrefix=1
     nacos:
       discovery:
         server-addr: localhost:8848
@@ -25,7 +31,11 @@ secure:
   ignore:
     urls: # 配置白名单路径
       - /game-auth/user/account/token
+      - /game-server/pk/start/game
+      - /game-auth/user/account/queryById
+      - /game-auth/user/bot/queryBot
       - /game-auth/test
+
 
 logging:
   pattern:

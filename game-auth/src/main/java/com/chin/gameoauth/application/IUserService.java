@@ -46,6 +46,13 @@ public interface IUserService {
     Map<String, String> checkUserToken(String token);
 
     /**
+     *
+     * @param userId
+     * @return
+     */
+    Map<String, String> queryUserById(Integer userId);
+
+    /**
      * 删除用户
      * @param uId
      * @return

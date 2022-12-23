@@ -169,6 +169,7 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
                     stopMatch();
                 } else if ("move".equals(event)) {
                     logger.info("move {}", data.getInteger("direction"));
+                    move(data.getInteger("direction"));
                 }
             }
         }
@@ -202,8 +203,18 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
         matchService.removePlayer(user.getId());
     }
 
-    private void move() {
+    private void move(Integer direction) {
         // 记录下用户的移动
+        if (game.getPlayerA().getId().equals(user.getId())) {
+            if (game.getPlayerA().getBotId().equals(-1)){
+                game.setNextStepA(direction);
+            }
+
+        } else if (game.getPlayerB().getId().equals(user.getId())){
+            if (game.getPlayerB().getBotId().equals(-1)) {
+                game.setNextStepB(direction);
+            }
+        }
     }
 
     public ChannelHandlerContext getChannelHandlerContext() {
@@ -223,17 +234,11 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
         User a = ChannelHandler.userSockets.get(aId).user;
         User b = ChannelHandler.userSockets.get(bId).user;
         Bot botA = null;
-        if (aBotId.equals(-1)) {
-            botA = new Bot();
-            botA.setId(-1);
-        } else {
+        if (!aBotId.equals(-1)) {
             botA = postIdForBot(aBotId);
         }
         Bot botB = null;
-        if (bBotId.equals(-1)) {
-            botB = new Bot();
-            botB.setId(-1);
-        } else {
+        if (!bBotId.equals(-1)) {
             botB = postIdForBot(bBotId);
         }
         Map<Integer, SocketHandler> users = ChannelHandler.userSockets;

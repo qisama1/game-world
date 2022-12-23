@@ -38,6 +38,11 @@ public class UserController {
         return userService.userInfo();
     }
 
+    @PostMapping("/user/account/queryById")
+    public Map<String, String> getUserById(@RequestParam Integer userId) {
+        return userService.queryUserById(userId);
+    }
+
     @PostMapping("/user/account/register")
     public Map<String, String> register(@RequestParam Map<String, String> map){
         String username = map.get("username");

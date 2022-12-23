@@ -31,9 +31,11 @@ secure:
   ignore:
     urls: # 配置白名单路径
       - /game-auth/user/account/token
-      - /game-auth/test
       - /game-server/pk/start/game
+      - /game-auth/user/account/queryById
       - /game-auth/user/bot/queryBot
+      - /game-auth/test
+
 
 logging:
   pattern:

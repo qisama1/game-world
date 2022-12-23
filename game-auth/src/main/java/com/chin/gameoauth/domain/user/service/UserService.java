@@ -4,6 +4,7 @@ import com.chin.gameoauth.application.IUserService;
 import com.chin.gameoauth.domain.security.model.UserDetailsImpl;
 import com.chin.gameoauth.domain.security.model.VO.UserDetail;
 import com.chin.gameoauth.domain.security.util.JwtUtil;
+import com.chin.gameoauth.domain.user.model.UserVO;
 import com.chin.gameoauth.domain.user.repository.IUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +99,17 @@ public class UserService implements IUserService {
     @Override
     public Map<String, String> checkUserToken(String token) {
         return null;
+    }
+
+    @Override
+    public Map<String, String> queryUserById(Integer userId) {
+        UserVO userVO = userRepository.queryUserById(userId);
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put("id", userVO.getId().toString());
+        resultMap.put("username", userVO.getUsername());
+        resultMap.put("photo", userVO.getPhoto());
+        resultMap.put("rating", userVO.getRating().toString());
+        return resultMap;
     }
 
     @Override
