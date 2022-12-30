@@ -28,4 +28,11 @@ public class PkController {
         Integer bBotId = Integer.parseInt(data.getFirst("b_bot_id"));
         return pkService.startGame(aId, aBotId, bId, bBotId);
     }
+
+    @PostMapping("/pk/receive/bot/move")
+    public String receiveMove(@RequestParam MultiValueMap<String, String> data) {
+        Integer userId = Integer.parseInt(data.getFirst("user_id"));
+        Integer direction = Integer.parseInt(data.getFirst("direction"));
+        return pkService.receiveNextMove(userId, direction);
+    }
 }

@@ -35,7 +35,7 @@ public class Game extends Thread{
     private Bot botA;
     private Bot botB;
 
-    private final static String addBotUrl = "http://127.0.0.1:3002/bot/add/";
+    private final static String addBotUrl = "http://game-bot/bot/add/";
 
     public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Integer idB, Bot botA, Bot botB) {
         this.rows = rows;

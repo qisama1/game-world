@@ -54,7 +54,7 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
     /**
      * 存放当前channel对应的game
      */
-    private Game game = null;
+    public Game game = null;
 
     /**
      * 存放当前channel的jwtToken

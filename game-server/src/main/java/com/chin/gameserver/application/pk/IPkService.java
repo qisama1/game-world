@@ -18,4 +18,11 @@ public interface IPkService {
      */
     String startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId);
 
+    /**
+     * 接受下一步的信息
+     * @param userId
+     * @param direction
+     * @return
+     */
+    String receiveNextMove(Integer userId, Integer direction);
 }

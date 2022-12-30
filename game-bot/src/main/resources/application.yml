@@ -1,0 +1,10 @@
+server:
+  port: 3002
+
+spring:
+  application:
+    name: game-bot
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
