@@ -35,6 +35,7 @@ secure:
       - /game-auth/user/account/queryById
       - /game-auth/user/bot/queryBot
       - /game-auth/test
+      - /game-server/pk/receive/bot/move
 
 
 logging:
